@@ -1,9 +1,26 @@
 import schedule from "node-schedule";
+import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
 import { relay } from "./relayer";
+import { probeAndSchedule } from "./main";
 import dotenv from "dotenv";
 dotenv.config();
+
+const toadScheduler = new ToadScheduler();
+
+/**
+ * Automatically probe and schedule txs every 4 hours via `probeAndSchedule`
+ */
+function startProbingTxs() {
+    const task = new AsyncTask("probe transactions", probeAndSchedule);
+    const job = new SimpleIntervalJob(
+        { hours: 4, runImmediately: true },
+        task
+    );
+
+    toadScheduler.addSimpleIntervalJob(job);
+}
 
 /**
  * Schedule the relay execution for a proposal
@@ -11,7 +28,18 @@ dotenv.config();
  */
 async function scheduleRelayForProposal(proposal: Proposal) {
     await executeAtBlock(proposal.endBlock - 2000, relay);
-} 
+}
+
+/**
+ * Ensure that there is a scheduled relay. If not schedule in a day.
+ */
+async function scheduleRelayForDelegate() {
+    if (schedule.scheduledJobs().length > 0) return;
+
+    // No relays scheduled, schedule for relay
+    const executeAt = Date.now() + 60 * 60 * 24 * 100; // Add one day
+    schedule.scheduleJob(new Date(executeAt), relay);
+}
 
 /**
  * Schedule the execution of an arbitrary function call at a block. Utilizies scheduling from `node-schedule`
@@ -37,4 +65,4 @@ async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
     });
 }
 
-export { scheduleRelayForProposal };
+export { scheduleRelayForProposal, scheduleRelayForDelegate, startProbingTxs };

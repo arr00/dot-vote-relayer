@@ -26,7 +26,7 @@ function addSeenProposal(proposal: Proposal) {
  * Probes database for new proposals and retrieves end block of new proposals
  * @returns Array of unseen proposal
  */
-async function probeProposal(): Promise<Proposal[]> {
+async function probeProposal(): Promise<[Proposal[], boolean]> {
     const web3 = await getWeb3();
     const governor = new web3.eth.Contract(
         governorAbi,
@@ -36,21 +36,30 @@ async function probeProposal(): Promise<Proposal[]> {
     const seenProposals = getSeenProposals();
     let newProposals: Proposal[] = [];
     const pendingTxs = await getPendingTxs();
-
-    pendingTxs.map(async (tx) => {
-        if (!(tx.proposalId in seenProposals)) {
-            // New Proposal
-            console.log("Haven't seen " + tx.proposalId);
-            const endBlock = Number(
-                (await governor.methods.getProposalById(tx.proposalId).call())
-                    .endBlock
-            );
-            const proposal = { proposalId: tx.proposalId, endBlock: endBlock };
-            addSeenProposal(proposal);
-            newProposals.push(proposal);
-        }
-    });
-    return newProposals;
+    let pendingDelegations = false;
+    await Promise.all(
+        pendingTxs.map(async (tx) => {
+            if (!(tx.proposalId in seenProposals) && tx.type == "vote") {
+                // New Proposal
+                const endBlock = Number(
+                    (
+                        await governor.methods
+                            .getProposalById(tx.proposalId)
+                            .call()
+                    ).endBlock
+                );
+                const proposal: Proposal = {
+                    proposalId: tx.proposalId,
+                    endBlock: endBlock,
+                };
+                addSeenProposal(proposal);
+                newProposals.push(proposal);
+            } else if (tx.type == "delegate") {
+                pendingDelegations = true;
+            }
+        })
+    );
+    return [newProposals, pendingDelegations];
 }
 
 export { probeProposal };

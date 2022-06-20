@@ -12,6 +12,7 @@
     "node-localstorage": "^2.2.1",
     "node-schedule": "^2.1.0",
     "prettier": "^2.7.1",
+    "toad-scheduler": "^1.6.1",
     "web3": "^1.7.3",
     "web3-providers-http": "^1.7.3"
   },

@@ -1,0 +1,34 @@
+{
+  "name": "dot-vote-relayer",
+  "version": "1.0.0",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "mongodb": "^4.7.0",
+    "node-localstorage": "^2.2.1",
+    "node-schedule": "^2.1.0",
+    "prettier": "^2.7.1",
+    "web3": "^1.7.3",
+    "web3-providers-http": "^1.7.3"
+  },
+  "scripts": {
+    "run": "npx tsc && node dist/main.js",
+    "lint:fix": "prettier --write **.ts"
+  },
+  "prettier": {
+    "overrides": [
+      {
+        "files": "src/**.ts",
+        "options": {
+          "tabWidth": 4,
+          "printWidth": 80,
+          "bracketSpacing": true
+        }
+      }
+    ]
+  }
+}

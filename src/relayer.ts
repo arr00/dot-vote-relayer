@@ -13,9 +13,10 @@ const multicallAbi = JSON.parse(
  */
 async function relay() {
     const [web3, governor, token] = await getWeb3();
+    const multicallAddress = "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441";
     const multicall = new web3.eth.Contract(
         multicallAbi,
-        "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441"
+        multicallAddress
     );
 
     const pendingTxs = await getPendingTxs();
@@ -23,7 +24,7 @@ async function relay() {
     const calls = pendingTxs.map(function (pendingTx) {
         if (pendingTx.type == "vote") {
             return {
-                target: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
+                target: multicallAddress,
                 calldata: governor.methods
                     .submitVoteBySignature(
                         pendingTx.proposalId,
@@ -37,7 +38,7 @@ async function relay() {
         } else if (pendingTx.type == "delegate") {
             // Delegate tx
             return {
-                target: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
+                target: multicallAddress,
                 callData: token.methods
                     .delegateBySig(
                         pendingTx.delegatee,

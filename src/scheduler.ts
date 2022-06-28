@@ -35,6 +35,7 @@ async function scheduleRelayForDelegate() {
 
     // No relays scheduled, schedule for relay
     const executeAt = Date.now() + 60 * 60 * 24 * 1000; // Add one day
+    console.log("Scheduling relay for epoch: " + executeAt);
     schedule.scheduleJob(new Date(executeAt), relay);
 }
 
@@ -44,6 +45,7 @@ async function scheduleRelayForDelegate() {
  * @param func Function to execute at block. Should be async function
  */
 async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
+    console.log("Scheduling relay for block#: " + atBlock);
     const [web3] = await getWeb3();
     const currentBlock = await web3.eth.getBlockNumber();
 
@@ -62,9 +64,18 @@ async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
     });
 }
 
+/**
+ * Terminate schedulers gracefully
+ */
+async function scheduleTerminate() {
+    toadScheduler.stop();
+    await schedule.gracefulShutdown();
+}
+
 export {
     scheduleRelayForProposal,
     scheduleRelayForDelegate,
     startProbingTxs,
     executeAtBlock,
+    scheduleTerminate
 };

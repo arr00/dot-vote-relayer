@@ -5,7 +5,7 @@ import {
     scheduleRelayForProposal,
     scheduleRelayForDelegate,
     startProbingTxs,
-    executeAtBlock,
+    scheduleTerminate,
 } from "./scheduler";
 
 process.on("SIGINT", terminate);
@@ -15,7 +15,6 @@ async function main() {
 }
 
 async function probeAndSchedule() {
-    console.log("Probing");
     const [newProposals, pendingDelegations] = await probeTransactions();
     newProposals.map(async (proposal) => {
         await scheduleRelayForProposal(proposal);
@@ -23,8 +22,9 @@ async function probeAndSchedule() {
     if (pendingDelegations) await scheduleRelayForDelegate(); // Only call after scheduling proposal relays
 }
 
-function terminate() {
-    console.log("Got your termination request, see yah!");
+async function terminate() {
+    await scheduleTerminate();
+    console.log("Dot-Vote-Relayer terminated");
     process.exit(0);
 }
 

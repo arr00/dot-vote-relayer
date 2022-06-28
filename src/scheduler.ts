@@ -14,10 +14,7 @@ const toadScheduler = new ToadScheduler();
  */
 function startProbingTxs() {
     const task = new AsyncTask("probe transactions", probeAndSchedule);
-    const job = new SimpleIntervalJob(
-        { hours: 4, runImmediately: true },
-        task
-    );
+    const job = new SimpleIntervalJob({ hours: 4, runImmediately: true }, task);
 
     toadScheduler.addSimpleIntervalJob(job);
 }
@@ -34,7 +31,7 @@ async function scheduleRelayForProposal(proposal: Proposal) {
  * Ensure that there is a scheduled relay. If not schedule in a day.
  */
 async function scheduleRelayForDelegate() {
-    if (schedule.scheduledJobs().length > 0) return;
+    if (schedule.scheduledJobs.length > 0) return;
 
     // No relays scheduled, schedule for relay
     const executeAt = Date.now() + 60 * 60 * 24 * 100; // Add one day
@@ -65,4 +62,9 @@ async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
     });
 }
 
-export { scheduleRelayForProposal, scheduleRelayForDelegate, startProbingTxs };
+export {
+    scheduleRelayForProposal,
+    scheduleRelayForDelegate,
+    startProbingTxs,
+    executeAtBlock,
+};

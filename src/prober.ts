@@ -10,36 +10,21 @@ const governorAbi = JSON.parse(
 );
 const localStorage = new LocalStorage("./local-storage");
 
-/// Get seen proposals dictionary from local storage
-function getSeenProposals(): { number: Proposal } {
-    return JSON.parse(localStorage.getItem("seen-proposals")) ?? {};
-}
-
-/// Add a seen proposal to local storage
-function addSeenProposal(proposal: Proposal) {
-    let seenProposals = getSeenProposals();
-    seenProposals[proposal.proposalId] = proposal;
-    localStorage.setItem("seen-proposals", JSON.stringify(seenProposals));
-}
+let seenProposals: Set<number> = new Set();
 
 /**
  * Probes database for new proposals and retrieves end block of new proposals
  * @returns Array of unseen proposal
  */
-async function probeProposal(): Promise<[Proposal[], boolean]> {
-    const web3 = await getWeb3();
-    const governor = new web3.eth.Contract(
-        governorAbi,
-        process.env.GOVERNOR_ADDRESS
-    );
+async function probeTransactions(): Promise<[Proposal[], boolean]> {
+    const [web3, governor] = await getWeb3();
 
-    const seenProposals = getSeenProposals();
     let newProposals: Proposal[] = [];
     const pendingTxs = await getPendingTxs();
     let pendingDelegations = false;
     await Promise.all(
         pendingTxs.map(async (tx) => {
-            if (!(tx.proposalId in seenProposals) && tx.type == "vote") {
+            if (tx.type == "vote" && !seenProposals.has(tx.proposalId)) {
                 // New Proposal
                 const endBlock = Number(
                     (
@@ -50,9 +35,9 @@ async function probeProposal(): Promise<[Proposal[], boolean]> {
                 );
                 const proposal: Proposal = {
                     proposalId: tx.proposalId,
-                    endBlock: endBlock,
+                    endBlock,
                 };
-                addSeenProposal(proposal);
+                seenProposals.add(proposal.proposalId);
                 newProposals.push(proposal);
             } else if (tx.type == "delegate") {
                 pendingDelegations = true;
@@ -62,4 +47,4 @@ async function probeProposal(): Promise<[Proposal[], boolean]> {
     return [newProposals, pendingDelegations];
 }
 
-export { probeProposal };
+export { probeTransactions };

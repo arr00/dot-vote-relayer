@@ -1,5 +1,4 @@
 import { getPendingTxs } from "./database/awaitingTxs";
-import { LocalStorage } from "node-localstorage";
 import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
 import path from "path";
@@ -8,13 +7,12 @@ import fs from "fs";
 const governorAbi = JSON.parse(
     fs.readFileSync(path.join(__dirname, "../abis/governor.abi"), "utf8")
 );
-const localStorage = new LocalStorage("./local-storage");
 
 let seenProposals: Set<number> = new Set();
 
 /**
  * Probes database for new proposals and retrieves end block of new proposals
- * @returns Array of unseen proposal
+ * @returns Array of unseen proposal and if there is a pending delegation tx
  */
 async function probeTransactions(): Promise<[Proposal[], boolean]> {
     const [web3, governor] = await getWeb3();

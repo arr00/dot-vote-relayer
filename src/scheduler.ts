@@ -34,7 +34,7 @@ async function scheduleRelayForDelegate() {
     if (schedule.scheduledJobs.length > 0) return;
 
     // No relays scheduled, schedule for relay
-    const executeAt = Date.now() + 60 * 60 * 24 * 100; // Add one day
+    const executeAt = Date.now() + 60 * 60 * 24 * 1000; // Add one day
     schedule.scheduleJob(new Date(executeAt), relay);
 }
 
@@ -44,7 +44,7 @@ async function scheduleRelayForDelegate() {
  * @param func Function to execute at block. Should be async function
  */
 async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
-    const web3 = await getWeb3();
+    const [web3] = await getWeb3();
     const currentBlock = await web3.eth.getBlockNumber();
 
     // Execute if block reached

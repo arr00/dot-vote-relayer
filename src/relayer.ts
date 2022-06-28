@@ -1,12 +1,16 @@
-import { getPendingTxs } from "./database/awaitingTxs";
+import { getPendingTxs, transactionsExecuted } from "./database/awaitingTxs";
 import { getWeb3 } from "./web3Manager";
 import fs from "fs";
+import path from "path";
 import axios from "axios";
 
 const multicallAbi = JSON.parse(
-    fs.readFileSync("../abis/multicall.abi", "utf8")
+    fs.readFileSync(path.join(__dirname, "../abis/multicall.abi"), "utf8")
 );
 
+/**
+ * Relay pending transactions to the blockchain
+ */
 async function relay() {
     const [web3, governor, token] = await getWeb3();
     const multicall = new web3.eth.Contract(
@@ -16,8 +20,8 @@ async function relay() {
 
     const pendingTxs = await getPendingTxs();
 
-    const calls = pendingTxs.map(function (pendingTx, index) {
-        if (pendingTx.type == "Vote") {
+    const calls = pendingTxs.map(function (pendingTx) {
+        if (pendingTx.type == "vote") {
             return {
                 target: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
                 calldata: governor.methods
@@ -28,13 +32,13 @@ async function relay() {
                         pendingTx.r,
                         pendingTx.s
                     )
-                    .endcodeABI(),
+                    .encodeABI(),
             };
-        } else {
+        } else if (pendingTx.type == "delegate") {
             // Delegate tx
             return {
                 target: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
-                calldata: token.methods
+                callData: token.methods
                     .delegateBySig(
                         pendingTx.delegatee,
                         pendingTx.nonce,
@@ -43,15 +47,25 @@ async function relay() {
                         pendingTx.r,
                         pendingTx.s
                     )
-                    .endcodeABI(),
+                    .encodeABI(),
             };
         }
+        // Return null if invalid type
+        return null;
     });
 
-    const relayTx = await governor.methods
-        .aggregate(calls)
-        .send({ maxFeePerGas: 100000000000 });
-    axios.get(
+    let relayTx = { transactionHash: "" };
+    if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
+        relayTx = await multicall.methods.aggregate(calls).send({
+            from: web3.eth.accounts.wallet[0].address,
+            gas: calls.length * 100000,
+            maxFeePerGas: "100000000000",
+            maxPriorityFeePerGas: "2000000000",
+        });
+        await transactionsExecuted(pendingTxs.map((tx) => tx._id));
+    }
+
+    await axios.get(
         process.env.NOTIFICATION_HOOK +
             "Relaying tx: https://etherscan.io/tx/" +
             relayTx.transactionHash

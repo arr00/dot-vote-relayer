@@ -27,7 +27,7 @@ async function relay() {
             ](pendingTx.proposalId, pendingTx.from).call();
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
-            
+
             calls.push({
                 target: governor._address,
                 callData: governor.methods[process.env.GOVERNOR_VOTE_FUNCTION](
@@ -90,7 +90,7 @@ async function relay() {
     }
 
     // All txs are invalid, mark as relayed
-    if (calls.length == 0) {
+    else if (calls.length == 0) {
         await transactionsExecuted(pendingTxs.map((tx) => tx._id));
     }
 }

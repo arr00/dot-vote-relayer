@@ -1,5 +1,3 @@
-import { getWeb3 } from "./web3Manager";
-import { getPendingTxs } from "./database/awaitingTxs";
 import { probeTransactions } from "./prober";
 import {
     scheduleRelayForProposal,
@@ -8,9 +6,8 @@ import {
     scheduleTerminate,
 } from "./scheduler";
 
-process.on("SIGINT", terminate);
-
 async function main() {
+    process.on("SIGINT", terminate);
     startProbingTxs();
 }
 
@@ -28,6 +25,4 @@ async function terminate() {
     process.exit(0);
 }
 
-main();
-
-export { probeAndSchedule };
+export { probeAndSchedule, main };

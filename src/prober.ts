@@ -1,12 +1,6 @@
 import { getPendingTxs } from "./database/awaitingTxs";
 import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
-import path from "path";
-import fs from "fs";
-
-const governorAbi = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../abis/governor.abi"), "utf8")
-);
 
 let seenProposals: Set<number> = new Set();
 

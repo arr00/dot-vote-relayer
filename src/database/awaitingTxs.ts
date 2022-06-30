@@ -8,7 +8,7 @@ type BySig = {
   v: string;
   r: string;
   s: string;
-  support: boolean;
+  support: boolean | number;
   proposalId: number;
   type: string;
   delegatee: string;

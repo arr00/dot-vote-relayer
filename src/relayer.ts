@@ -18,22 +18,36 @@ async function relay() {
 
     const pendingTxs = await getPendingTxs();
 
-    const calls = pendingTxs.map(function (pendingTx) {
+    let calls: { target: string; callData: string }[] = [];
+    for (const pendingTx of pendingTxs) {
         if (pendingTx.type == "vote") {
-            return {
+            // Ensure valid call
+            const receipt = await governor.methods[
+                process.env.GOVERNOR_GET_RECEIPT_FUNCTION
+            ](pendingTx.proposalId, pendingTx.from).call();
+            const noVote = !receipt[0] && receipt[1] == 0;
+            if (!noVote) continue;
+
+            process.kill(0);
+
+            calls.push({
                 target: governor._address,
-                callData: governor.methods
-                    .submitVoteBySignature(
-                        pendingTx.proposalId,
-                        pendingTx.support,
-                        pendingTx.v,
-                        pendingTx.r,
-                        pendingTx.s
-                    )
-                    .encodeABI(),
-            };
+                callData: governor.methods[process.env.GOVERNOR_VOTE_FUNCTION](
+                    pendingTx.proposalId,
+                    pendingTx.support,
+                    pendingTx.v,
+                    pendingTx.r,
+                    pendingTx.s
+                ).encodeABI(),
+            });
         } else if (pendingTx.type == "delegate") {
-            return {
+            // Ensure valid call
+            const currentNonce: number = await token
+                .nonces(pendingTx.from)
+                .call();
+            if (currentNonce != pendingTx.nonce) continue;
+
+            calls.push({
                 target: token._address,
                 callData: token.methods
                     .delegateBySig(
@@ -45,30 +59,42 @@ async function relay() {
                         pendingTx.s
                     )
                     .encodeABI(),
-            };
+            });
         }
         // Return null if invalid type
         return null;
-    });
+    }
 
-    let relayTx = { transactionHash: "" };
     if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
         try {
-            relayTx = await multicall.methods.aggregate(calls).send({
+            // Ensure won't revert
+            await multicall.methods.aggregate(calls).call({
                 from: web3.eth.accounts.wallet[0].address,
                 gas: calls.length * 100000,
                 maxFeePerGas: "100000000000",
                 maxPriorityFeePerGas: "2000000000",
             });
+
+            const relayTx = await multicall.methods.aggregate(calls).send({
+                from: web3.eth.accounts.wallet[0].address,
+                gas: calls.length * 100000,
+                maxFeePerGas: "100000000000",
+                maxPriorityFeePerGas: "2000000000",
+            });
+
+            await sendMessage(
+                "Relay tx: https://etherscan.io/tx/" + relayTx.transactionHash
+            );
             await transactionsExecuted(pendingTxs.map((tx) => tx._id));
         } catch (e) {
             await sendMessage("Relaying failed with error: " + e.message);
         }
     }
 
-    await sendMessage(
-        "Relaying tx: https://etherscan.io/tx/" + relayTx.transactionHash
-    );
+    // All txs are invalid, mark as relayed
+    if (calls.length == 0) {
+        await transactionsExecuted(pendingTxs.map((tx) => tx._id));
+    }
 }
 
 export { relay };

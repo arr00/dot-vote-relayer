@@ -1,8 +1,5 @@
 import Web3 from "web3";
-import dotenv from "dotenv";
-import path from "path";
 import fs from "fs";
-dotenv.config();
 
 const governorAbi = JSON.parse(
     fs.readFileSync(process.env.GOVERNOR_ABI_PATH, "utf8")

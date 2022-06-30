@@ -4,8 +4,6 @@ import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
 import { relay } from "./relayer";
 import { probeAndSchedule } from "./main";
-import dotenv from "dotenv";
-dotenv.config();
 
 const toadScheduler = new ToadScheduler();
 

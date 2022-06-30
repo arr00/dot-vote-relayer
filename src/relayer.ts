@@ -27,9 +27,7 @@ async function relay() {
             ](pendingTx.proposalId, pendingTx.from).call();
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
-
-            process.kill(0);
-
+            
             calls.push({
                 target: governor._address,
                 callData: governor.methods[process.env.GOVERNOR_VOTE_FUNCTION](

@@ -13,9 +13,11 @@ async function main() {
 
 async function probeAndSchedule() {
     const [newProposals, pendingDelegations] = await probeTransactions();
-    newProposals.map(async (proposal) => {
-        await scheduleRelayForProposal(proposal);
-    });
+    await Promise.all(
+        newProposals.map(async (proposal) => {
+            await scheduleRelayForProposal(proposal);
+        })
+    );
     if (pendingDelegations) await scheduleRelayForDelegate(); // Only call after scheduling proposal relays
 }
 

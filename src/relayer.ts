@@ -22,7 +22,7 @@ async function relay() {
         if (pendingTx.type == "vote") {
             return {
                 target: governor._address,
-                calldata: governor.methods
+                callData: governor.methods
                     .submitVoteBySignature(
                         pendingTx.proposalId,
                         pendingTx.support,

@@ -59,7 +59,7 @@ async function executeAtBlock(atBlock: number, func: () => Promise<void>) {
     const executeIn = (atBlock - currentBlock) * 12; // Conservative estimate of 12s per block
     const executeAt = new Date(Date.now() + executeIn * 1000);
 
-    schedule.scheduleJob(executeAt, async function () {
+    await schedule.scheduleJob(executeAt, async function () {
         await executeAtBlock(atBlock, func);
     });
 }
@@ -77,5 +77,5 @@ export {
     scheduleRelayForDelegate,
     startProbingTxs,
     executeAtBlock,
-    scheduleTerminate
+    scheduleTerminate,
 };

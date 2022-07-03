@@ -2,6 +2,12 @@
   "name": "dot-vote-relayer",
   "version": "1.0.0",
   "license": "MIT",
+  "author": "Arr00",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "types": "lib/index.d.ts",
   "devDependencies": {
     "typescript": "^4.7.4"
   },
@@ -16,7 +22,8 @@
     "web3": "^1.7.3"
   },
   "scripts": {
-    "run": "npx tsc && node dist/main.js",
+    "build" : "npx tsc",
+    "run": "npx tsc && node lib/main.js",
     "lint:fix": "prettier --write **.ts"
   },
   "prettier": {

@@ -1,14 +1,11 @@
 import Web3 from "web3";
-import dotenv from "dotenv";
-import path from "path";
 import fs from "fs";
-dotenv.config();
 
 const governorAbi = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../abis/governor.abi"), "utf8")
+    fs.readFileSync(process.env.GOVERNOR_ABI_PATH, "utf8")
 );
 const tokenAbi = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../abis/token.abi"), "utf8")
+    fs.readFileSync(process.env.TOKEN_ABI_PATH, "utf8")
 );
 
 let web3Insance;

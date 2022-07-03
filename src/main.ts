@@ -1,5 +1,3 @@
-import { getWeb3 } from "./web3Manager";
-import { getPendingTxs } from "./database/awaitingTxs";
 import { probeTransactions } from "./prober";
 import {
     scheduleRelayForProposal,
@@ -7,27 +5,36 @@ import {
     startProbingTxs,
     scheduleTerminate,
 } from "./scheduler";
-
-process.on("SIGINT", terminate);
+import { sendMessage } from "./messager";
 
 async function main() {
+    process.on("SIGINT", terminate);
     startProbingTxs();
 }
 
+/**
+ * Probe for new proposals and schedule relay for new proposals and delegations
+ */
 async function probeAndSchedule() {
     const [newProposals, pendingDelegations] = await probeTransactions();
-    newProposals.map(async (proposal) => {
-        await scheduleRelayForProposal(proposal);
-    });
+    await Promise.all(
+        newProposals.map(async (proposal) => {
+            await scheduleRelayForProposal(proposal);
+        })
+    );
     if (pendingDelegations) await scheduleRelayForDelegate(); // Only call after scheduling proposal relays
 }
 
+/**
+ * Wind down process and terminate
+ */
 async function terminate() {
-    await scheduleTerminate();
+    await Promise.all([
+        scheduleTerminate,
+        sendMessage("Dot-Vote-Relayer terminating"),
+    ]);
     console.log("Dot-Vote-Relayer terminated");
     process.exit(0);
 }
 
-main();
-
-export { probeAndSchedule };
+export { probeAndSchedule, main };

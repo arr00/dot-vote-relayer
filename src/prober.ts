@@ -1,12 +1,6 @@
 import { getPendingTxs } from "./database/awaitingTxs";
 import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
-import path from "path";
-import fs from "fs";
-
-const governorAbi = JSON.parse(
-    fs.readFileSync(path.join(__dirname, "../abis/governor.abi"), "utf8")
-);
 
 let seenProposals: Set<number> = new Set();
 
@@ -20,28 +14,27 @@ async function probeTransactions(): Promise<[Proposal[], boolean]> {
     let newProposals: Proposal[] = [];
     const pendingTxs = await getPendingTxs();
     let pendingDelegations = false;
-    await Promise.all(
-        pendingTxs.map(async (tx) => {
-            if (tx.type == "vote" && !seenProposals.has(tx.proposalId)) {
-                // New Proposal
-                const endBlock = Number(
-                    (
-                        await governor.methods
-                            .getProposalById(tx.proposalId)
-                            .call()
-                    ).endBlock
-                );
-                const proposal: Proposal = {
-                    proposalId: tx.proposalId,
-                    endBlock,
-                };
-                seenProposals.add(proposal.proposalId);
-                newProposals.push(proposal);
-            } else if (tx.type == "delegate") {
-                pendingDelegations = true;
-            }
-        })
-    );
+
+    for (const tx of pendingTxs) {
+        if (tx.type == "vote" && !seenProposals.has(tx.proposalId)) {
+            // New Proposal
+            const endBlock = Number(
+                (
+                    await governor.methods[
+                        process.env.GOVERNOR_GET_PROPOSAL_FUNCTION
+                    ](tx.proposalId).call()
+                ).endBlock
+            );
+            const proposal: Proposal = {
+                proposalId: tx.proposalId,
+                endBlock,
+            };
+            seenProposals.add(proposal.proposalId);
+            newProposals.push(proposal);
+        } else if (tx.type == "delegate") {
+            pendingDelegations = true;
+        }
+    }
     return [newProposals, pendingDelegations];
 }
 

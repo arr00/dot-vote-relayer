@@ -59,8 +59,6 @@ async function relay() {
                     .encodeABI(),
             });
         }
-        // Return null if invalid type
-        return null;
     }
 
     if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
@@ -73,16 +71,18 @@ async function relay() {
                 maxPriorityFeePerGas: "2000000000",
             });
 
-            const relayTx = await multicall.methods.aggregate(calls).send({
+            await multicall.methods.aggregate(calls).send({
                 from: web3.eth.accounts.wallet[0].address,
                 gas: calls.length * 100000,
                 maxFeePerGas: "100000000000",
                 maxPriorityFeePerGas: "2000000000",
+            }).on('transactionHash', async function (hash) {
+                await sendMessage(
+                    "Relay tx: https://etherscan.io/tx/" + hash
+                );
             });
 
-            await sendMessage(
-                "Relay tx: https://etherscan.io/tx/" + relayTx.transactionHash
-            );
+            await sendMessage("Relay Confirmed");
             await transactionsExecuted(pendingTxs.map((tx) => tx._id));
         } catch (e) {
             await sendMessage("Relaying failed with error: " + e.message);

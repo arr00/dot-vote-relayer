@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "license": "MIT",
   "author": "Arr00",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arr00/dot-vote-relayer.git"
+  },
   "main": "lib/index.js",
   "files": [
     "lib",
@@ -10,21 +14,23 @@
   ],
   "types": "lib/index.d.ts",
   "devDependencies": {
+    "prettier": "^2.7.1",
     "typescript": "^4.7.4"
   },
   "dependencies": {
     "axios": "^0.27.2",
     "dotenv": "^16.0.1",
-    "express": "^4.18.1",
     "mongodb": "^4.7.0",
     "node-schedule": "^2.1.0",
-    "prettier": "^2.7.1",
     "toad-scheduler": "^1.6.1",
     "web3": "^1.7.3"
   },
+  "resolutions": {
+    "got": ">=11.8.5"
+  },
   "scripts": {
-    "build" : "tsc",
-    "run": "npx tsc && node lib/main.js",
+    "build": "tsc",
+    "run": "tsc && node lib/main.js",
     "lint:fix": "prettier --write **.ts"
   },
   "prettier": {

@@ -22,3 +22,5 @@ Then start your relayer as follows:
 const relayer = new Relayer(config);
 relayer.start();
 ```
+
+For an example integration, see [dydx-relayer](https://github.com/arr00/dydx-relayer).

@@ -40,10 +40,10 @@ async function relay() {
             });
         } else if (pendingTx.type == "delegate") {
             // Ensure valid call
-            const currentNonce: number = await token
+            const currentNonce: number = await token.methods
                 .nonces(pendingTx.from)
                 .call();
-            if (currentNonce != pendingTx.nonce) continue;
+            if (currentNonce != Number(pendingTx.nonce)) continue;
 
             calls.push({
                 target: token._address,
@@ -64,12 +64,7 @@ async function relay() {
     if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
         try {
             // Ensure won't revert
-            await multicall.methods.aggregate(calls).call({
-                from: web3.eth.accounts.wallet[0].address,
-                gas: calls.length * 100000,
-                maxFeePerGas: "100000000000",
-                maxPriorityFeePerGas: "2000000000",
-            });
+            await multicall.methods.aggregate(calls).call();
 
             await multicall.methods.aggregate(calls).send({
                 from: web3.eth.accounts.wallet[0].address,

@@ -16,6 +16,6 @@ type RelayerConfiguration = {
     governorGetProposalFunction: string;
     governorGetReceiptFunction: string;
     relayerPk: string;
-}
+};
 
 export { Proposal, RelayerConfiguration };

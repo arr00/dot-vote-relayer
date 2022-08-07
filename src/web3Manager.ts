@@ -2,12 +2,8 @@ import Web3 from "web3";
 import fs from "fs";
 import { globalConfig } from "./index";
 
-const governorAbi = JSON.parse(
-    fs.readFileSync("./governor.abi", "utf8")
-);
-const tokenAbi = JSON.parse(
-    fs.readFileSync("./token.abi", "utf8")
-);
+const governorAbi = JSON.parse(fs.readFileSync("./governor.abi", "utf8"));
+const tokenAbi = JSON.parse(fs.readFileSync("./token.abi", "utf8"));
 
 let web3Instance;
 let governor;
@@ -37,10 +33,7 @@ function setWeb3() {
         governorAbi,
         globalConfig.governorAddress
     );
-    token = new web3Instance.eth.Contract(
-        tokenAbi,
-        globalConfig.tokenAddress
-    );
+    token = new web3Instance.eth.Contract(tokenAbi, globalConfig.tokenAddress);
 
     web3Instance.eth.accounts.wallet.add(globalConfig.relayerPk);
     console.log("Account is " + web3Instance.eth.accounts.wallet[0].address);

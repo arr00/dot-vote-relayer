@@ -1,10 +1,31 @@
 import { main } from "./main";
+import { RelayerConfiguration } from "./types";
 
+let globalConfig: RelayerConfiguration;
 export class Relayer {
+    constructor(config: RelayerConfiguration) {
+        if (
+            config.ethRpcUrl &&
+            config.governorAddress &&
+            config.governorGetProposalFunction &&
+            config.governorGetReceiptFunction &&
+            config.governorVoteFunction &&
+            config.mongodDbUrl &&
+            config.relayerPk &&
+            config.tokenAddress
+        ) {
+            globalConfig = config;
+        } else {
+            throw "Invalid config";
+        }
+    }
+
     /**
      * Starts the relayer
      */
-    public start() {
+    start() {
         main();
     }
 }
+
+export { globalConfig };

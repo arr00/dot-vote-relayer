@@ -1,9 +1,10 @@
 import { MongoClient } from "mongodb";
+import { globalConfig } from "../index";
 
 let database = null;
 
 async function startDatabase() {
-  const mongoDBURL = process.env.MONGODB_URL;
+  const mongoDBURL = globalConfig.mongodDbUrl;
   const connection = await MongoClient.connect(mongoDBURL);
   database = connection.db();
 }

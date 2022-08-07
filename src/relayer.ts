@@ -3,6 +3,7 @@ import { getWeb3 } from "./web3Manager";
 import fs from "fs";
 import path from "path";
 import { sendMessage } from "./messager";
+import { globalConfig } from "./index";
 
 const multicallAbi = JSON.parse(
     fs.readFileSync(path.join(__dirname, "../abis/multicall.abi"), "utf8")
@@ -23,14 +24,14 @@ async function relay() {
         if (pendingTx.type == "vote") {
             // Ensure valid call
             const receipt = await governor.methods[
-                process.env.GOVERNOR_GET_RECEIPT_FUNCTION
+                globalConfig.governorGetReceiptFunction
             ](pendingTx.proposalId, pendingTx.from).call();
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
 
             calls.push({
                 target: governor._address,
-                callData: governor.methods[process.env.GOVERNOR_VOTE_FUNCTION](
+                callData: governor.methods[globalConfig.governorVoteFunction](
                     pendingTx.proposalId,
                     pendingTx.support,
                     pendingTx.v,
@@ -66,16 +67,19 @@ async function relay() {
             // Ensure won't revert
             await multicall.methods.aggregate(calls).call();
 
-            await multicall.methods.aggregate(calls).send({
-                from: web3.eth.accounts.wallet[0].address,
-                gas: calls.length * 100000,
-                maxFeePerGas: "100000000000",
-                maxPriorityFeePerGas: "2000000000",
-            }).on('transactionHash', async function (hash) {
-                await sendMessage(
-                    "Relay tx: https://etherscan.io/tx/" + hash
-                );
-            });
+            await multicall.methods
+                .aggregate(calls)
+                .send({
+                    from: web3.eth.accounts.wallet[0].address,
+                    gas: calls.length * 100000,
+                    maxFeePerGas: "100000000000",
+                    maxPriorityFeePerGas: "2000000000",
+                })
+                .on("transactionHash", async function (hash) {
+                    await sendMessage(
+                        "Relay tx: https://etherscan.io/tx/" + hash
+                    );
+                });
 
             await sendMessage("Relay Confirmed");
             await transactionsExecuted(pendingTxs.map((tx) => tx._id));

@@ -1,6 +1,7 @@
 import { getPendingTxs } from "./database/awaitingTxs";
 import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
+import { globalConfig } from "./index";
 
 let seenProposals: Set<number> = new Set();
 
@@ -21,7 +22,7 @@ async function probeTransactions(): Promise<[Proposal[], boolean]> {
             const endBlock = Number(
                 (
                     await governor.methods[
-                        process.env.GOVERNOR_GET_PROPOSAL_FUNCTION
+                        globalConfig.governorGetProposalFunction
                     ](tx.proposalId).call()
                 ).endBlock
             );

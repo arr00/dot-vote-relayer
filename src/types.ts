@@ -6,4 +6,16 @@ type Proposal = {
     endBlock: number;
 };
 
-export { Proposal };
+type RelayerConfiguration = {
+    ethRpcUrl: string;
+    mongodDbUrl: string;
+    governorAddress: string;
+    tokenAddress: string;
+    notificationHook?: string;
+    governorVoteFunction: string;
+    governorGetProposalFunction: string;
+    governorGetReceiptFunction: string;
+    relayerPk: string;
+}
+
+export { Proposal, RelayerConfiguration };

@@ -20,6 +20,7 @@ async function relay() {
     const pendingTxs = await getPendingTxs();
 
     let calls: { target: string; callData: string }[] = [];
+    let totalGas = 0;
     for (const pendingTx of pendingTxs) {
         if (pendingTx.type == "vote") {
             // Ensure valid call
@@ -29,6 +30,7 @@ async function relay() {
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
 
+            totalGas += 100000;
             calls.push({
                 target: governor._address,
                 callData: governor.methods[globalConfig.governorVoteFunction](
@@ -46,6 +48,7 @@ async function relay() {
                 .call();
             if (currentNonce != Number(pendingTx.nonce)) continue;
 
+            totalGas += 200000;
             calls.push({
                 target: token._address,
                 callData: token.methods
@@ -71,7 +74,7 @@ async function relay() {
                 .aggregate(calls)
                 .send({
                     from: web3.eth.accounts.wallet[0].address,
-                    gas: calls.length * 100000,
+                    gas: totalGas,
                     maxFeePerGas: "100000000000",
                     maxPriorityFeePerGas: "2000000000",
                 })

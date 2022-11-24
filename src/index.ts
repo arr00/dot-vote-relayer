@@ -10,7 +10,7 @@ export class Relayer {
             config.governorGetProposalFunction &&
             config.governorGetReceiptFunction &&
             config.governorVoteFunction &&
-            config.mongodDbUrl &&
+            config.mongoDbUrl &&
             config.relayerPk &&
             config.tokenAddress
         ) {

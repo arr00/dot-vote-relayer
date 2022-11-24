@@ -4,7 +4,7 @@ import { globalConfig } from "../index";
 let database = null;
 
 async function startDatabase() {
-  const mongoDBURL = globalConfig.mongodDbUrl;
+  const mongoDBURL = globalConfig.mongoDbUrl;
   const connection = await MongoClient.connect(mongoDBURL);
   database = connection.db();
 }

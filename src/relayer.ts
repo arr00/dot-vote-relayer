@@ -20,7 +20,6 @@ async function relay() {
     const pendingTxs = await getPendingTxs();
 
     let calls: { target: string; callData: string }[] = [];
-    let totalGas = 0;
     for (const pendingTx of pendingTxs) {
         if (pendingTx.type == "vote") {
             // Ensure valid call
@@ -29,8 +28,7 @@ async function relay() {
             ](pendingTx.proposalId, pendingTx.from).call();
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
-
-            totalGas += 100000;
+            
             calls.push({
                 target: governor._address,
                 callData: governor.methods[globalConfig.governorVoteFunction](
@@ -48,7 +46,6 @@ async function relay() {
                 .call();
             if (currentNonce != Number(pendingTx.nonce)) continue;
 
-            totalGas += 200000;
             calls.push({
                 target: token._address,
                 callData: token.methods
@@ -68,13 +65,14 @@ async function relay() {
     if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
         try {
             // Ensure won't revert
-            await multicall.methods.aggregate(calls).call();
+            await multicall.methods.aggregate(calls).call({from: web3.eth.accounts.wallet[0].address});
+            const gas = await multicall.methods.aggregate(calls).estimateGas({from: web3.eth.accounts.wallet[0].address})
 
             await multicall.methods
                 .aggregate(calls)
                 .send({
                     from: web3.eth.accounts.wallet[0].address,
-                    gas: totalGas,
+                    gas,
                     maxFeePerGas: "100000000000",
                     maxPriorityFeePerGas: "2000000000",
                 })

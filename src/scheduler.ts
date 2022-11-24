@@ -4,6 +4,7 @@ import { getWeb3 } from "./web3Manager";
 import { Proposal } from "./types";
 import { relay } from "./relayer";
 import { probeAndSchedule } from "./main";
+import { globalConfig } from "./index";
 
 const toadScheduler = new ToadScheduler();
 
@@ -22,7 +23,11 @@ function startProbingTxs() {
  * @param proposal Proposal to schedule relay for. Relay time based on `endBlock`.
  */
 async function scheduleRelayForProposal(proposal: Proposal) {
-    await executeAtBlock(proposal.endBlock - 2000, relay);
+    const relayAtBlocks = globalConfig.relayAtBlocks ?? [2000];
+
+    for (const relayBlock of relayAtBlocks) {
+        await executeAtBlock(proposal.endBlock - relayBlock, relay);
+    }
 }
 
 /**
@@ -38,8 +43,8 @@ async function scheduleRelayForDelegate() {
 }
 
 /**
- * Schedule the execution of an arbitrary function call at a block. Utilizies scheduling from `node-schedule`
- * @param atBlock Target block to execut func at
+ * Schedule the execution of an arbitrary function call at a block. Utilizes scheduling from `node-schedule`
+ * @param atBlock Target block to execute func at
  * @param func Function to execute at block. Should be async function
  */
 async function executeAtBlock(atBlock: number, func: () => Promise<void>) {

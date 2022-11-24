@@ -3,14 +3,16 @@ Dot-Vote-Relayer relays signatures created on a Dot-Vote website. To use Dot-Vot
 import the relayer to your file using `const { Relayer } = require("dot-vote-relayer");`.
 
 Create a config for your relayer which contains the following fields:
-- ethRpcUrl
-- mongodDbUrl
-- governorAddress
-- tokenAddress
-- governorVoteFunction
-- governorGetProposalFunction
-- governorGetReceiptFunction
-- relayerPk
+- ethRpcUrl - String
+- mongoDbUrl - String
+- governorAddress - Address
+- tokenAddress - Address
+- governorVoteFunction - String
+- governorGetProposalFunction - String
+- governorGetReceiptFunction - String
+- relayerPk - String
+- notificationHook - String
+- relayAtBlocks - array of integers
 
 There is also an optional `notificationHook` field which can be used to send telegram notifications.
 

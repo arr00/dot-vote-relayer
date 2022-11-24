@@ -19,7 +19,7 @@ type BySig = {
 };
 
 /**
- * Gets pending transactions from the mondodb database
+ * Gets pending transactions from the mongodb database
  * @returns The transactions that are awaiting execution
  */
 async function getPendingTxs(): Promise<[BySig]> {

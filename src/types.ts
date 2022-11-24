@@ -8,7 +8,7 @@ type Proposal = {
 
 type RelayerConfiguration = {
     ethRpcUrl: string;
-    mongodDbUrl: string;
+    mongoDbUrl: string;
     governorAddress: string;
     tokenAddress: string;
     notificationHook?: string;
@@ -16,6 +16,7 @@ type RelayerConfiguration = {
     governorGetProposalFunction: string;
     governorGetReceiptFunction: string;
     relayerPk: string;
+    relayAtBlocks?: number[];
 };
 
 export { Proposal, RelayerConfiguration };

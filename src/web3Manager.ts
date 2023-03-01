@@ -35,8 +35,12 @@ function setWeb3() {
     );
     token = new web3Instance.eth.Contract(tokenAbi, globalConfig.tokenAddress);
 
-    web3Instance.eth.accounts.wallet.add(globalConfig.relayerPk);
-    console.log("Account is " + web3Instance.eth.accounts.wallet[0].address);
+    if (!!globalConfig.relayerPk) {
+        web3Instance.eth.accounts.wallet.add(globalConfig.relayerPk);
+        console.log(
+            "Account is " + web3Instance.eth.accounts.wallet[0].address
+        );
+    }
 }
 
 export { getWeb3 };

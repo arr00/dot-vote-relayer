@@ -10,13 +10,17 @@ export class Relayer {
             config.governorGetProposalFunction &&
             config.governorGetReceiptFunction &&
             config.governorVoteFunction &&
+            config.governorGetProposalState &&
             config.mongoDbUrl &&
-            config.relayerPk &&
             config.tokenAddress
         ) {
             globalConfig = config;
         } else {
             throw "Invalid config";
+        }
+
+        if (!(config.ozApiKey && config.ozApiKey) && !config.relayerPk) {
+            throw "No Auth provided";
         }
     }
 

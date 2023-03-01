@@ -7,6 +7,7 @@ type Proposal = {
 };
 
 type RelayerConfiguration = {
+    activeProposalState?: number;
     ethRpcUrl: string;
     mongoDbUrl: string;
     governorAddress: string;
@@ -14,9 +15,12 @@ type RelayerConfiguration = {
     notificationHook?: string;
     governorVoteFunction: string;
     governorGetProposalFunction: string;
+    governorGetProposalState: string;
     governorGetReceiptFunction: string;
-    relayerPk: string;
+    ozApiKey?: string;
+    ozApiSecret?: string;
     relayAtBlocks?: number[];
+    relayerPk?: string;
 };
 
 export { Proposal, RelayerConfiguration };

@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { sendMessage } from "./messager";
 import { globalConfig } from "./index";
+import { Relayer } from "defender-relay-client";
 
 const multicallAbi = JSON.parse(
     fs.readFileSync(path.join(__dirname, "../abis/multicall.abi"), "utf8")
@@ -20,15 +21,27 @@ async function relay() {
     const pendingTxs = await getPendingTxs();
 
     let calls: { target: string; callData: string }[] = [];
-    for (const pendingTx of pendingTxs) {
+    for (let i = pendingTxs.length - 1; i >= 0; i--) {
+        const pendingTx = pendingTxs[i];
+
         if (pendingTx.type == "vote") {
             // Ensure valid call
-            const receipt = await governor.methods[
-                globalConfig.governorGetReceiptFunction
-            ](pendingTx.proposalId, pendingTx.from).call();
+            const [receipt, state] = await Promise.all([
+                governor.methods[globalConfig.governorGetReceiptFunction](
+                    pendingTx.proposalId,
+                    pendingTx.from
+                ).call(),
+                governor.methods[globalConfig.governorGetProposalState](
+                    pendingTx.proposalId
+                ).call(),
+            ]);
             const noVote = !receipt[0] && receipt[1] == 0;
             if (!noVote) continue;
-            
+            if (state != (globalConfig.activeProposalState ?? 1)) {
+                pendingTxs.splice(i, 1);
+                continue;
+            }
+
             calls.push({
                 target: governor._address,
                 callData: governor.methods[globalConfig.governorVoteFunction](
@@ -65,22 +78,50 @@ async function relay() {
     if (calls !== undefined && calls.length > 0 && !calls.includes(null)) {
         try {
             // Ensure won't revert
-            await multicall.methods.aggregate(calls).call({from: web3.eth.accounts.wallet[0].address});
-            const gas = await multicall.methods.aggregate(calls).estimateGas({from: web3.eth.accounts.wallet[0].address})
-
             await multicall.methods
                 .aggregate(calls)
-                .send({
-                    from: web3.eth.accounts.wallet[0].address,
-                    gas,
-                    maxFeePerGas: "100000000000",
-                    maxPriorityFeePerGas: "2000000000",
-                })
-                .on("transactionHash", async function (hash) {
-                    await sendMessage(
-                        "Relay tx: https://etherscan.io/tx/" + hash
-                    );
+                .call({ from: "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33" });
+            const gasLimit = await multicall.methods
+                .aggregate(calls)
+                .estimateGas({
+                    from: "0x2B384212EDc04Ae8bB41738D05BA20E33277bf33",
                 });
+
+            const callData = await multicall.methods
+                .aggregate(calls)
+                .encodeABI();
+
+            const tx = {
+                to: multicall.options.address,
+                value: 0,
+                data: callData,
+                maxFeePerGas: "100000000000",
+                maxPriorityFeePerGas: "1000000000",
+                gasLimit,
+            };
+
+            if (globalConfig.relayerPk) {
+                await web3.eth
+                    .sendTransaction(
+                        Object.assign(tx, {
+                            from: web3.eth.accounts.wallet[0].address,
+                        })
+                    )
+                    .on("transactionHash", async function (hash) {
+                        await sendMessage(
+                            "Relay tx: https://etherscan.io/tx/" + hash
+                        );
+                    });
+            } else {
+                const credentials = {
+                    apiKey: globalConfig.ozApiKey!,
+                    apiSecret: globalConfig.ozApiSecret!,
+                };
+
+                const relayer = new Relayer(credentials);
+
+                await relayer.sendTransaction(tx);
+            }
 
             await sendMessage("Relay Confirmed");
             await transactionsExecuted(pendingTxs.map((tx) => tx._id));

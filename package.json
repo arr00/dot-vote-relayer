@@ -1,6 +1,6 @@
 {
   "name": "dot-vote-relayer",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "license": "MIT",
   "author": "Arr00",
   "repository": {
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "axios": "^0.27.2",
+    "defender-relay-client": "^1.39.0",
     "mongodb": "^4.7.0",
     "node-schedule": "^2.1.0",
     "toad-scheduler": "^1.6.1",

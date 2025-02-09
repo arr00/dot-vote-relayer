@@ -52,7 +52,7 @@ async function relay() {
                     pendingTx.from,
                     `${pendingTx.r}${pendingTx.s.substring(
                         2
-                    )}${pendingTx.v.substring(2)}}`
+                    )}${pendingTx.v.substring(2)}`
                 ).encodeABI(),
             });
         } else if (pendingTx.type == "delegate") {
@@ -100,7 +100,7 @@ async function relay() {
                 data: callData,
                 maxFeePerGas: "100000000000",
                 maxPriorityFeePerGas: "1000000000",
-                gasLimit,
+                gasLimit: gasLimit * 1.2,
             };
 
             if (globalConfig.relayerPk) {

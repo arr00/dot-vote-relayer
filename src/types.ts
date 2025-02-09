@@ -15,7 +15,10 @@ type RelayerConfiguration = {
     tokenAddress: string;
     notificationHook?: string;
     governorVoteFunction: string;
-    governorGetProposalFunction: string;
+    governorGetProposalEndBlock: (
+        governor: any,
+        proposalId: number
+    ) => Promise<number>;
     governorGetProposalState: string;
     governorGetReceiptFunction: string;
     ozApiKey?: string;

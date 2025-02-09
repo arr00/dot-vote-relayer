@@ -8,13 +8,17 @@ type Proposal = {
 
 type RelayerConfiguration = {
     activeProposalState?: number;
+    canceledProposalState?: number;
     ethRpcUrl: string;
     mongoDbUrl: string;
     governorAddress: string;
     tokenAddress: string;
     notificationHook?: string;
     governorVoteFunction: string;
-    governorGetProposalFunction: string;
+    governorGetProposalEndBlock: (
+        governor: any,
+        proposalId: number
+    ) => Promise<number>;
     governorGetProposalState: string;
     governorGetReceiptFunction: string;
     ozApiKey?: string;

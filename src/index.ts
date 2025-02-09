@@ -7,7 +7,7 @@ export class Relayer {
         if (
             config.ethRpcUrl &&
             config.governorAddress &&
-            config.governorGetProposalFunction &&
+            config.governorGetProposalEndBlock &&
             config.governorGetReceiptFunction &&
             config.governorVoteFunction &&
             config.governorGetProposalState &&

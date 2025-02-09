@@ -8,6 +8,7 @@ type Proposal = {
 
 type RelayerConfiguration = {
     activeProposalState?: number;
+    canceledProposalState?: number;
     ethRpcUrl: string;
     mongoDbUrl: string;
     governorAddress: string;

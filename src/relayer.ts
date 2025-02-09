@@ -35,9 +35,11 @@ async function relay() {
                     pendingTx.proposalId
                 ).call(),
             ]);
-            const noVote = !receipt[0] && receipt[1] == 0;
+            const noVote = !receipt; // Receipt is `hasVoted` for OZ governance
             if (!noVote) continue;
+            if (state == (globalConfig.canceledProposalState ?? 2)) continue; // Mark votes on canceled proposals as executed
             if (state != (globalConfig.activeProposalState ?? 1)) {
+                // Should only be pending proposal and will relay at a later point
                 pendingTxs.splice(i, 1);
                 continue;
             }
@@ -47,9 +49,10 @@ async function relay() {
                 callData: governor.methods[globalConfig.governorVoteFunction](
                     pendingTx.proposalId,
                     pendingTx.support,
-                    pendingTx.v,
-                    pendingTx.r,
-                    pendingTx.s
+                    pendingTx.from,
+                    `${pendingTx.r}${pendingTx.s.substring(
+                        2
+                    )}${pendingTx.v.substring(2)}}`
                 ).encodeABI(),
             });
         } else if (pendingTx.type == "delegate") {

@@ -100,7 +100,7 @@ async function relay() {
                 data: callData,
                 maxFeePerGas: "100000000000",
                 maxPriorityFeePerGas: "1000000000",
-                gasLimit: gasLimit * 1.2,
+                gasLimit: Math.round(gasLimit * 1.2),
             };
 
             if (globalConfig.relayerPk) {

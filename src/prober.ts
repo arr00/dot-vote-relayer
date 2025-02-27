@@ -19,7 +19,10 @@ async function probeTransactions(): Promise<[Proposal[], boolean]> {
     for (const tx of pendingTxs) {
         if (tx.type == "vote" && !seenProposals.has(tx.proposalId)) {
             // New Proposal
-            const endBlock = await globalConfig.governorGetProposalEndBlock(governor, tx.proposalId);
+            const endBlock = await globalConfig.governorGetProposalEndBlock(
+                governor,
+                tx.proposalId
+            );
             const proposal: Proposal = {
                 proposalId: tx.proposalId,
                 endBlock,
